@@ -1,9 +1,10 @@
 #include "stdafx.h"
-
-static float rgb[3];
+#include "Util/Graphics.h"
 
 static const float maxDistance = 100.f;
 static const float lineThicknes = 0.001f;
+
+static CRGBA RGBA;
 
 static bool WithinDistance(Ped from, Ped to)
 {
@@ -15,29 +16,24 @@ static bool WithinDistance(Ped from, Ped to)
 	return x && y;
 }
 
+static void OnStart()
+{
+	RGBA = g_Random.GetRandomColourRGB();
+}
+
 static void OnTick()
 {
 	static Ped playerPed = PLAYER_PED_ID();
 	for (Ped ped : GetAllPeds())
 	{
-		if (!IS_ENTITY_ON_SCREEN(ped) || IS_ENTITY_DEAD(ped, false) || !DOES_ENTITY_EXIST(ped) || ped == playerPed || !WithinDistance(playerPed, ped))
-			continue;
-
-		Vector3 coords = GET_PED_BONE_COORDS(ped, 0x796E, 0.f, 0.f, 0.f);
-		SET_DRAW_ORIGIN(coords.x, coords.y, coords.z, 0);
-		DRAW_RECT(-0.019f, -0.015f, lineThicknes, 0.07f, rgb[0], rgb[1], rgb[2], 255, false); //Left line
-		DRAW_RECT(0.019f, -0.015f, lineThicknes, 0.07f, rgb[0], rgb[1], rgb[2], 255, false); //Right Line
-		DRAW_RECT(0.f, -0.050f, 0.038f, lineThicknes, rgb[0], rgb[1], rgb[2], 255, false); //Top Line
-		DRAW_RECT(0.f, 0.02f, 0.038f, lineThicknes, rgb[0], rgb[1], rgb[2], 255, false); //Bottom Line
-		CLEAR_DRAW_ORIGIN();
+		if (IS_ENTITY_ON_SCREEN(ped) && !IS_ENTITY_DEAD(ped, false) && ped != playerPed && WithinDistance(playerPed, ped))
+		{
+			Vector3 coords = GET_PED_BONE_COORDS(ped, 0x796E, 0.f, 0.f, 0.f); // Head
+			SET_DRAW_ORIGIN(coords.x, coords.y, coords.z, 0);
+			Util::DRAW_2D_BOX(0, 0, 0.032, 0.073, RGBA, 0.001);
+			CLEAR_DRAW_ORIGIN();
+		}
 	}
-}
-
-static void OnStart()
-{
-	rgb[0] = g_Random.GetRandomInt(0, 255);
-	rgb[1] = g_Random.GetRandomInt(0, 255);
-	rgb[2] = g_Random.GetRandomInt(0, 255);
 }
 
 static RegisterEffect registerEffect(OnStart, nullptr, OnTick, EffectInfo

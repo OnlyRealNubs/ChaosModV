@@ -412,6 +412,7 @@
     <ClInclude Include="Memory\Vehicle.h" />
     <ClInclude Include="Memory\WeaponPool.h" />
     <ClInclude Include="Components\SplashTexts.h" />
+    <ClInclude Include="Util\Graphics.h" />
     <ClInclude Include="Util\Hash.h" />
     <ClInclude Include="Util\Natives.h" />
     <ClInclude Include="Util\Macros.h" />

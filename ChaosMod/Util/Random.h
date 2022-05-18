@@ -2,6 +2,11 @@
 
 #include <random>
 
+struct CRGBA
+{
+	unsigned int R, G, B, A;
+};
+
 class Random
 {
 private:
@@ -23,9 +28,22 @@ public:
 		return distr(m_Random);
 	}
 
-	inline float GetRandomFloat(float fLower, float fUpper) {
+	inline float GetRandomFloat(float fLower, float fUpper) 
+	{
 		std::uniform_real_distribution<float> distr(fLower, fUpper);
 		return distr(m_Random);
+	}
+
+	//Returns a random RGBA value without a random alpha: 255 or max.
+	inline CRGBA GetRandomColourRGB(unsigned int min = 0, unsigned int max = 255)
+	{
+		return { (unsigned int)GetRandomInt(min,max), (unsigned int)GetRandomInt(min,max), (unsigned int)GetRandomInt(min,max), max };
+	}	
+	
+	//Returns a random RGBA value with a random alpha.
+	inline CRGBA GetRandomColourRGBA(unsigned int min = 0, unsigned int max = 255)
+	{
+		return { (unsigned int)GetRandomInt(min,max), (unsigned int)GetRandomInt(min,max), (unsigned int)GetRandomInt(min,max), (unsigned int)GetRandomInt(min,max) };
 	}
 };
 

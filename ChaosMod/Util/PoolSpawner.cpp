@@ -245,7 +245,7 @@ Vehicle CreatePoolCloneVehicle(Vehicle vehToClone)
 	return clone;
 }
 
-Object CreatePoolProp(Object ulModelHash, float fPosX, float fPosY, float fPosZ, bool bDynamic)
+Object CreatePoolProp(Hash ulModelHash, float fPosX, float fPosY, float fPosZ, bool bDynamic)
 {
 	LoadModel(ulModelHash);
 
@@ -255,5 +255,12 @@ Object CreatePoolProp(Object ulModelHash, float fPosX, float fPosY, float fPosZ,
 
 	SET_MODEL_AS_NO_LONGER_NEEDED(ulModelHash);
 
+	return prop;
+}
+
+Object CreatePoolPropAttachedToPed(Hash ulModelHash, Ped ped, int boneIndex, float offsetX, float offsetY, float offsetZ, float rotX, float rotY, float rotZ, BOOL softPinning, BOOL collision, BOOL fixedRot)
+{
+	Object prop = CreatePoolProp(ulModelHash, 0, 0, 0, false);
+	ATTACH_ENTITY_TO_ENTITY(prop, ped, boneIndex, offsetX, offsetY, offsetZ, rotX, rotY, rotZ, false, softPinning, collision, true, 0, fixedRot);
 	return prop;
 }

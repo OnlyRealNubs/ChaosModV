@@ -3,6 +3,7 @@
 #include "Memory/Physics.h"
 
 static std::vector<Hash> availablePropModels;
+static const Hash weaponHash = GET_HASH_KEY("weapon_specialcarbine");
 
 static void OnTick()
 {
@@ -32,8 +33,8 @@ static void OnTick()
 			GET_MODEL_DIMENSIONS(model, &min, &max);
 			float modelSize = (max - min).Length();
 
-			// Don't include models that are either very small or very large
-			if (modelSize > 0.3f && modelSize <= 6.f)
+			// Don't include models that are too small
+			if (modelSize > 0.4f)
 			{
 				availablePropModels.push_back(model);
 			}
@@ -55,6 +56,18 @@ static void OnTick()
 
 		SET_ENTITY_HAS_GRAVITY(prop, true);
 
+		LOG("Creating Prop Step 2");
+
+		SET_OBJECT_PHYSICS_PARAMS(prop, 100.f, 1.f, 1.f, 0.f, 0.f, .5f, 0.f, 0.f, 0.f, 0.f, 0.f);
+		
+		// Object needs to be shot at to be dynamic, otherwise it will be frozen (thank you Last0xygen)
+		Vector3 min, max;
+		GET_MODEL_DIMENSIONS(choosenPropHash, &min, &max);
+		SHOOT_SINGLE_BULLET_BETWEEN_COORDS(spawnPos.x, spawnPos.y, spawnPos.z + max.z - min.z, spawnPos.x, spawnPos.y,
+		                                   spawnPos.z, 1, true, weaponHash, 0, false, true, 0.01);
+
+		Memory::ApplyForceToEntityCenterOfMass(prop, 0, 50.f, 0, -10000.f, true, false, true, true);		
+		
 		for (int i = 0; i < MAX_PROPS; i++)
 		{
 			Object &prop = props[i];
@@ -65,18 +78,6 @@ static void OnTick()
 				break;
 			}
 		}
-
-		LOG("Creating Prop Step 2");
-
-		SET_OBJECT_PHYSICS_PARAMS(prop, 100000.f, 1.f, 1.f, 0.f, 0.f, .5f, 0.f, 0.f, 0.f, 0.f, 0.f);
-		ACTIVATE_PHYSICS(prop);
-		SET_ACTIVATE_OBJECT_PHYSICS_AS_SOON_AS_IT_IS_UNFROZEN(prop, true);
-		FREEZE_ENTITY_POSITION(prop, false);
-		_0xCC6E963682533882(prop);
-		APPLY_FORCE_TO_ENTITY_CENTER_OF_MASS(prop, 0, 50.f, 0, -10000.f, true, false, true, true);
-		//Memory::ApplyForceToEntityCenterOfMass(prop, 0, 50.f, 0, -10000.f, true, false, true, true);
-
-		SET_MODEL_AS_NO_LONGER_NEEDED(choosenPropHash);
 
 		LOG("Creating Prop Step 4");
 
@@ -132,7 +133,7 @@ static void OnStop()
 REGISTER_EFFECT(nullptr, OnStop, OnTick, EffectInfo
 	{
 		.Name = "Prop Rain",
-		.Id = "proprain",
+		.Id = "misc_proprain",
 		.IsTimed = true
 	}
 );

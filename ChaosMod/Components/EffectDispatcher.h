@@ -34,6 +34,7 @@ class EffectDispatcher : public Component
 
 		std::string m_szName;
 		std::string m_szFakeName;
+		std::string m_szTempName;
 
 		float m_fTimer   = 0.f;
 		float m_fMaxTime = 0.f;
@@ -141,6 +142,8 @@ class EffectDispatcher : public Component
 
 	void OverrideEffectName(std::string_view effectId, const std::string &szOverrideName);
 	void OverrideEffectNameId(std::string_view effectId, std::string_view fakeEffectId);
+
+	void SetEffectTempName(std::string_view effectId, std::string_view mixedName);
 
 	template <class T>
 	requires std::is_base_of_v<Component, T>

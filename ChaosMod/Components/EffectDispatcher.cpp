@@ -283,6 +283,7 @@ void EffectDispatcher::DrawEffectTexts()
 	for (const ActiveEffect &effect : m_rgActiveEffects)
 	{
 		const bool bHasFake = !effect.m_szFakeName.empty();
+		const bool bHasTemp = !effect.m_szTempName.empty();
 		auto &effectData    = g_dictEnabledEffects.at(effect.m_EffectIdentifier);
 
 		if ((effect.m_bHideText && !bHasFake)
@@ -294,7 +295,19 @@ void EffectDispatcher::DrawEffectTexts()
 
 		std::string name = effect.m_szFakeName;
 
-		if (!effect.m_bHideText || !bHasFake)
+		if (MetaModifiers::m_bMixNames && !effect.m_bHideText && !effectData.IsMeta())
+		{
+			if (!bHasTemp)
+			{
+				auto szSelectedName = std::next(std::begin(g_dictEffectsMap), g_Random.GetRandomInt(0, g_dictEffectsMap.size() - 1))->second.Name;
+				SetEffectTempName(effect.m_EffectIdentifier.GetEffectId(), szSelectedName);
+			}
+			else
+			{
+				name = effect.m_szTempName;
+			}
+		}
+		else if (!effect.m_bHideText || !bHasFake)
 		{
 			name = effect.m_szName;
 		}
@@ -684,6 +697,17 @@ void EffectDispatcher::OverrideEffectNameId(std::string_view effectId, std::stri
 			{
 				effect.m_szFakeName = result->second.Name;
 			}
+		}
+	}
+}
+
+void EffectDispatcher::SetEffectTempName(std::string_view effectId, std::string_view mixedName)
+{
+	for (auto &effect : m_rgActiveEffects)
+	{
+		if (effect.m_EffectIdentifier.GetEffectId() == effectId)
+		{
+			effect.m_szTempName = mixedName;
 		}
 	}
 }

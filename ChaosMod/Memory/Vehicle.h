@@ -211,4 +211,159 @@ namespace Memory
 		Memory::SetVector3(vehicleMatrixAddress + 0x10, vehicleRightVec * scaleMultiplier);
 		Memory::SetVector3(vehicleMatrixAddress + 0x20, vehicleUpVec * scaleMultiplier);
 	}
+
+	inline void SetVehicleSusHeight(Vehicle vehicle, float height)
+	{
+		auto addr = hook::get_pattern<char>("E8 ? ? ? ? 48 63 87 ? ? ? ? 48 8B 8F");
+		auto vehAddr       = getScriptHandleBaseAddress(vehicle);
+
+		auto numWheelsOffset = *(uint32_t *)(addr + 8);
+		auto wheelsPtrOffset = *(uint32_t *)(addr + 15);
+		
+		if (numWheelsOffset == 0 || wheelsPtrOffset == 0)
+		{
+			LOG("Invalid");
+			return;
+		}
+
+		auto numWheels = *reinterpret_cast<uint8_t *>(vehAddr + numWheelsOffset);
+		auto wheelsPtr = *reinterpret_cast<uint64_t *>(vehAddr + wheelsPtrOffset);
+
+		*reinterpret_cast<float *>(wheelsPtr + 0x07C) = height;
+
+		//if (numWheels < 4)
+		//{
+		//	return;
+		//}
+
+		//for (int i = 0; i < numWheels; i++)
+		//{
+		//	auto wheelAddr = *reinterpret_cast<uint64_t *>(wheelsPtr + 0x008 * i);
+		//	*reinterpret_cast<float *>(wheelAddr + 0x038) = height;
+		//	//*reinterpret_cast<float *>(wheelAddr + 0x08) = 0.f;
+		//	//*reinterpret_cast<float *>(wheelAddr + 0x010) = -0.f;
+		//}
+	}	
+	
+	inline void SetVehicleWheelSize(Vehicle vehicle, float size)
+	{
+		//Set Visual 
+		auto addr = hook::get_pattern<char>("44 0F 2F 43 48 45 8D");
+		auto vehAddr       = getScriptHandleBaseAddress(vehicle);
+
+		auto drawHandlerPtrOffset = *(uint8_t *)(addr + 4);
+		auto streamRenderGfxPtrOffset = *hook::get_pattern<uint32_t>("4C 8D 48 ? 80 E1 01", -4);
+
+		LOG(1);
+		auto drawHandler = *reinterpret_cast<uint64_t *>((uint64_t)vehAddr + drawHandlerPtrOffset);
+		LOG(2);
+		auto streamRenderGfx = *reinterpret_cast<uint64_t *>(drawHandler + streamRenderGfxPtrOffset);
+		
+		LOG(3);
+		if (streamRenderGfx == 0)
+		{
+			LOG("Invalid");
+			return;
+		}
+		
+		LOG(4);
+		addr = hook::get_pattern<char>("48 89 01 B8 00 00 80 3F 66 44 89 51");
+		auto streamRenderWheelSizeOffset = *(uint8_t *)(addr + 20);
+		LOG(4.5);
+
+		*reinterpret_cast<float *>(streamRenderGfx + streamRenderWheelSizeOffset) = size;
+
+		LOG(5);
+		//Set Physical (Collision)
+		//addr				 = hook::get_pattern<char>("E8 ? ? ? ? 48 63 87 ? ? ? ? 48 8B 8F");
+
+		//LOG(6);
+		//auto numWheelsOffset = *(uint32_t *)(addr + 8);
+		//LOG(7);
+		//auto wheelsPtrOffset = *(uint32_t *)(addr + 15);
+
+		//if (numWheelsOffset == 0 || wheelsPtrOffset == 0)
+		//{
+		//	LOG("Invalid");
+		//	return;
+		//}
+
+		//LOG(8);
+		//auto numWheels = *reinterpret_cast<uint8_t *>(vehAddr + numWheelsOffset);
+		//LOG(9);
+		//auto wheelsPtr = *reinterpret_cast<uint64_t *>(vehAddr + wheelsPtrOffset);
+
+		//if (numWheels < 4)
+		//{
+		//	return;
+		//}
+
+		//for (int i = 0; i < numWheels; i++)
+		//{
+		//	LOG(10);
+		//	auto wheelAddr                                = *reinterpret_cast<uint64_t *>(wheelsPtr + 0x008 * i);
+		//	*reinterpret_cast<float *>(wheelAddr + 0x110) = size;
+		//}
+	}
+	
+	inline void SetVehicleWheelWidth(Vehicle vehicle, float width)
+	{
+		//Set Visual 
+		auto addr = hook::get_pattern<char>("44 0F 2F 43 48 45 8D");
+		auto vehAddr       = getScriptHandleBaseAddress(vehicle);
+
+		auto drawHandlerPtrOffset = *(uint8_t *)(addr + 4);
+		auto streamRenderGfxPtrOffset = *hook::get_pattern<uint32_t>("4C 8D 48 ? 80 E1 01", -4);
+
+		LOG(1);
+		auto drawHandler = *reinterpret_cast<uint64_t *>((uint64_t)vehAddr + drawHandlerPtrOffset);
+		LOG(2);
+		auto streamRenderGfx = *reinterpret_cast<uint64_t *>(drawHandler + streamRenderGfxPtrOffset);
+		
+		LOG(3);
+		if (streamRenderGfx == 0)
+		{
+			LOG("Invalid");
+			return;
+		}
+		
+		LOG(4);
+		addr = hook::get_pattern<char>("48 89 01 B8 00 00 80 3F 66 44 89 51");
+		auto streamRenderWheelWidthOffset = *(uint8_t *)(addr + 23);
+		LOG(4.5);
+
+		*reinterpret_cast<float *>(streamRenderGfx + streamRenderWheelWidthOffset) = width;
+
+		LOG(5);
+		//Set Physical (Collision)
+		//addr				 = hook::get_pattern<char>("E8 ? ? ? ? 48 63 87 ? ? ? ? 48 8B 8F");
+
+		//LOG(6);
+		//auto numWheelsOffset = *(uint32_t *)(addr + 8);
+		//LOG(7);
+		//auto wheelsPtrOffset = *(uint32_t *)(addr + 15);
+
+		//if (numWheelsOffset == 0 || wheelsPtrOffset == 0)
+		//{
+		//	LOG("Invalid");
+		//	return;
+		//}
+
+		//LOG(8);
+		//auto numWheels = *reinterpret_cast<uint8_t *>(vehAddr + numWheelsOffset);
+		//LOG(9);
+		//auto wheelsPtr = *reinterpret_cast<uint64_t *>(vehAddr + wheelsPtrOffset);
+
+		//if (numWheels < 4)
+		//{
+		//	return;
+		//}
+
+		//for (int i = 0; i < numWheels; i++)
+		//{
+		//	LOG(10);
+		//	auto wheelAddr                                = *reinterpret_cast<uint64_t *>(wheelsPtr + 0x008 * i);
+		//	*reinterpret_cast<float *>(wheelAddr + 0x118) = width;
+		//}
+	}
 }

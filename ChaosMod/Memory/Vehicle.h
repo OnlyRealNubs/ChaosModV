@@ -282,31 +282,6 @@ namespace Memory
 		auto streamRenderWheelWidthOffset = *(uint32_t *)(addr + 23);
 
 		*reinterpret_cast<float *>(streamRenderGfx + streamRenderWheelWidthOffset) = width;
-
-		// Set Physical
-		addr                 = hook::get_pattern<char>("E8 ? ? ? ? 48 63 87 ? ? ? ? 48 8B 8F");
-
-		auto numWheelsOffset = *(uint32_t *)(addr + 8);
-		auto wheelsPtrOffset = *(uint32_t *)(addr + 15);
-
-		if (numWheelsOffset == 0 || wheelsPtrOffset == 0)
-		{
-			return;
-		}
-
-		auto numWheels = *reinterpret_cast<uint8_t *>(vehAddr + numWheelsOffset);
-		auto wheelsPtr = *reinterpret_cast<uint64_t *>(vehAddr + wheelsPtrOffset);
-
-		if (numWheels < 4)
-		{
-			return;
-		}
-
-		for (int i = 0; i < numWheels; i++)
-		{
-			auto wheelAddr                                = *reinterpret_cast<uint64_t *>(wheelsPtr + 0x008 * i);
-			*reinterpret_cast<float *>(wheelAddr + 0x118) = width;
-		}
 	}
 
 	
@@ -330,35 +305,5 @@ namespace Memory
 		auto streamRenderWheelWidthOffset = *(uint32_t *)(addr + 23);
 
 		return *reinterpret_cast<float *>(streamRenderGfx + streamRenderWheelWidthOffset);
-	}
-
-	inline void SetVehicleTrackWidth(Vehicle vehicle, float width)
-	{
-		auto addr            = hook::get_pattern<char>("E8 ? ? ? ? 48 63 87 ? ? ? ? 48 8B 8F");
-		auto vehAddr         = getScriptHandleBaseAddress(vehicle);
-
-		auto numWheelsOffset = *(uint32_t *)(addr + 8);
-		auto wheelsPtrOffset = *(uint32_t *)(addr + 15);
-
-		if (numWheelsOffset == 0 || wheelsPtrOffset == 0)
-		{
-			return;
-		}
-
-		auto numWheels                                = *reinterpret_cast<uint8_t *>(vehAddr + numWheelsOffset);
-		auto wheelsPtr                                = *reinterpret_cast<uint64_t *>(vehAddr + wheelsPtrOffset);
-
-		if (numWheels < 4)
-		{
-			return;
-		}
-
-		for (int i = 0; i < numWheels; i++)
-		{
-			float flip                                    = i % 2 == 0 ? 1.0f : -1.0f;
-
-			auto wheelAddr = *reinterpret_cast<uint64_t *>(wheelsPtr + 0x008 * i);
-			*reinterpret_cast<float *>(wheelAddr + 0x30) = -width * flip;
-		}
 	}
 }

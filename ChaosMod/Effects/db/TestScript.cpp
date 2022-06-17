@@ -6,11 +6,10 @@
 struct VehicleData
 {
 	float fRaise;
-	float fWheelWidth;
-	float fWheelSize;
 };
 
 std::map<Hash, VehicleData> vehiclesMap;
+std::map<Vehicle, Vector3> vehiclesCGMap;
 
 static const float fWheelScale = 1.8f;
 
@@ -19,48 +18,55 @@ static void OnStop()
 	for (auto const &[model, data] : vehiclesMap)
 	{
 		LoadModel(model);
-		Vehicle temp = CREATE_VEHICLE(model, 0.f, 0.f, 0.f, 0.f, true, false, false);
+		Vehicle temp = CREATE_VEHICLE(model, 0.f, 0.f, -50.f, 0.f, true, false, true);
+		FREEZE_ENTITY_POSITION(temp, true);
 
 		Memory::SetVehicleRaise(temp, data.fRaise);
-		Memory::SetVehicleWheelSize(temp, data.fWheelSize);
-		Memory::SetVehicleWheelWidth(temp, data.fWheelWidth);
 
-		//Need to change the wheels again for the size to take effect
-		SET_VEHICLE_MOD(temp, 23, g_Random.GetRandomInt(0, 10), true);
-		SET_VEHICLE_WHEEL_TYPE(temp, g_Random.GetRandomInt(0, 7));
-
+		DELETE_ENTITY(&temp);
 		vehiclesMap.erase(model);
 	}
+
+	for (auto const &[veh, CG] : vehiclesCGMap)
+	{
+		SET_CGOFFSET(veh, CG.x, CG.y, CG.z);
+	}
+
 	vehiclesMap.clear();
+	vehiclesCGMap.clear();
 }
 
 static void OnTick()
 {
 	for (Vehicle veh : GetAllVehs())
 	{
-		if (!vehiclesMap.contains(GET_ENTITY_MODEL(veh)))
+		if (!DOES_ENTITY_EXIST(veh))
+		    continue;
+
+		Hash vehModel = GET_ENTITY_MODEL(veh);
+	    if (!vehiclesMap.contains(vehModel))
 		{
-			// Without custom wheels, we can't set the scale/width
-			SET_VEHICLE_MOD(veh, 23, g_Random.GetRandomInt(0, 10), true);
-			SET_VEHICLE_WHEEL_TYPE(veh, g_Random.GetRandomInt(0, 7));
+			Memory::SetVehicleRaise(veh, 1.f);		
 
-			float ogSize = Memory::GetVehicleWheelSize(veh), ogWidth = Memory::GetVehicleWheelWidth(veh);
-			Memory::SetVehicleRaise(veh, 1.f);
+			_SET_VEHICLE_WHEELS_DEAL_DAMAGE(veh, true);
 
-			vehiclesMap.emplace(GET_ENTITY_MODEL(veh), VehicleData(0.f, ogWidth, ogSize));
+			vehiclesMap.emplace(vehModel, VehicleData(0.f));
 		}
 
-		Memory::SetVehicleTrackWidth(veh, 1.5f); // Has to be set every frame
+		if (!vehiclesCGMap.contains(veh))
+		{
+			Vector3 ogCG = GET_CGOFFSET(veh);
+			SET_CGOFFSET(veh, ogCG.x, ogCG.y, ogCG.z - 0.8f);
 
-		Memory::SetVehicleWheelSize(veh, fWheelScale);
-		Memory::SetVehicleWheelWidth(veh, fWheelScale);
+			vehiclesCGMap.emplace(veh, ogCG);
+		}
 	}
 }
 
 //	clang-format off
 REGISTER_EFFECT(nullptr, OnStop, OnTick, EffectInfo
 	{ 
-		.Name = "_MNSTR_TRUKS_",
+		.Name = "Monster Trcuks",
 		.Id = "vehs_monster_trucks",
 		.IsTimed = true
 	}

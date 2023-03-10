@@ -425,10 +425,23 @@ static void ParseScriptRaw(std::string scriptName, std::string_view script, Pars
 	{
 		return LuaInvoke(scriptName, lua, ullHash, eReturnType, args);
 	};
-	lua["WAIT"]                                 = WAIT;
+	lua["WAIT"] = [](const sol::this_state &lua, DWORD time)
+	{
+		WAIT(time);
+	};
 	// Replace those natives with our own safe versions
 	lua["APPLY_FORCE_TO_ENTITY"]                = APPLY_FORCE_TO_ENTITY;
 	lua["APPLY_FORCE_TO_ENTITY_CENTER_OF_MASS"] = APPLY_FORCE_TO_ENTITY_CENTER_OF_MASS;
+
+	// Lua scripts can't enable/disable control actions for some reason
+	lua["DISABLE_CONTROL_ACTION"]               = [](int control, int action, bool disable)
+	{
+		DISABLE_CONTROL_ACTION(control, action, disable);
+	};
+	lua["ENABLE_CONTROL_ACTION"]                = [](int control, int action, bool enable)
+	{
+		ENABLE_CONTROL_ACTION(control, action, enable);
+	};
 
 	lua["LoadModel"]                            = LoadModel;
 
@@ -466,12 +479,22 @@ static void ParseScriptRaw(std::string scriptName, std::string_view script, Pars
 	lua["SetAudioClearness"]                       = Hooks::SetAudioClearness;
 	lua["ResetAudioClearness"]                     = Hooks::ResetAudioClearness;
 
-	lua["GetGameplayCamOffsetInWorldCoords"] = Util::GetGameplayCamOffsetInWorldCoords;
-	lua["GetCoordsFromGameplayCam"]          = Util::GetCoordsFromGameplayCam;
+	lua["GetGameplayCamOffsetInWorldCoords"]       = [](LuaVector3 vOffset)
+	{
+		Vector3 vReturn = Util::GetGameplayCamOffsetInWorldCoords(Vector3::Init(vOffset.m_fX, vOffset.m_fY, vOffset.m_fZ));
+		return LuaVector3(vReturn.x, vReturn.y, vReturn.z);
+	};
+	lua["GetCoordsFromGameplayCam"] = [](float fDistance)
+	{
+		Vector3 vReturn = Util::GetCoordsFromGameplayCam(fDistance);
+		return LuaVector3(vReturn.x, vReturn.y, vReturn.z);
+	};
 
-	lua["CreateHostilePed"]                  = CreateHostilePed;
-
-	lua["GetCoordAround"]                    = GetCoordAround;
+	lua["GetCoordAround"] = [](Entity iEntity, float fAngle, float fRadius, float fZOffset, bool bRelative)
+	{
+		Vector3 vReturn = GetCoordAround(iEntity, fAngle, fRadius, fZOffset, bRelative);
+		return LuaVector3(vReturn.x, vReturn.y, vReturn.z);
+	};
 
 	lua["IsWeaponShotgun"]                   = Util::IsWeaponShotgun;
 
